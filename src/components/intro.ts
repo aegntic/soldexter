@@ -34,19 +34,17 @@ export class IntroComponent extends Container {
     this.addChild(new Text(theme.primary('═'.repeat(INTRO_WIDTH)), 0, 0));
     this.addChild(new Spacer(1));
 
-    // SOL in purple with violet shadow, DEXTER in pastel blue with blue shadow
-    const solPurple = chalk.hex('#b47aff');
-    const violetShadow = chalk.hex('#6a3aa8');
-    const dextBlue = chalk.hex('#7ec8f8');
-    const blueShadow = chalk.hex('#3a6a9a');
+    // SOL in purple, DEXTER in pastel blue
+    const sol = chalk.hex('#b47aff').bold;
+    const dext = chalk.hex('#7ec8f8').bold;
 
     const bannerLines = [
-      ` ${violetShadow('███████╗')}${blueShadow('███████╗')} ${blueShadow('████████╗')} ${blueShadow('███████╗██╗███████╗██████╗')}`,
-      ` ${violetShadow('██╔════╝')}${blueShadow('██╔════╝')}${blueShadow('██╔═══██╗')}${blueShadow('██╔════╝╚██╗██╔╝╚══██╔══╝██╔════╝██╔══██╗')}`,
-      ` ${solPurple('███████╗')}${dextBlue('█████╗')}  ${dextBlue('██║   ██║')}${dextBlue('███████╗██║█████╗   ██║   █████╗  ██████╔╝')}`,
-      ` ${violetShadow('╚════██║')}${blueShadow('██╔══╝')}  ${blueShadow('██║▄▄ ██║')}${blueShadow('╚════██║██║██╔══╝   ██║   ██╔══╝  ██╔══██╗')}`,
-      ` ${violetShadow('███████║')}${blueShadow('███████╗')}${blueShadow('╚██████╔╝')}${blueShadow('███████║██║███████╗██║   ███████╗██║  ██║')}`,
-      ` ${violetShadow('╚══════╝')}${blueShadow('╚══════╝')}${blueShadow(' ╚══▀▀═╝')}${blueShadow(' ╚══════╝╚═╝╚══════╝╚═╝   ╚══════╝╚═╝  ╚═╝')}`,
+      ` ${sol('███████╗')} ${dext('██████╗ ██╗     ██████╗ ███████╗██╗  ██╗████████╗███████╗██████╗ ')}`,
+      ` ${sol('██╔════╝')}${dext('██╔═══██╗██║     ██╔══██╗██╔════╝╚██╗██╔╝╚══██╔══╝██╔════╝██╔══██╗')}`,
+      ` ${sol('███████╗')}${dext('██║   ██║██║     ██║  ██║█████╗   ╚███╔╝    ██║   █████╗  ██████╔╝')}`,
+      ` ${sol('╚════██║')}${dext('██║   ██║██║     ██║  ██║██╔══╝   ██╔██╗    ██║   ██╔══╝  ██╔══██╗')}`,
+      ` ${sol('███████║')}${dext('╚██████╔╝███████╗██████╔╝███████╗██╔╝ ██╗   ██║   ███████╗██║  ██║')}`,
+      ` ${sol('╚══════╝')}${dext(' ╚═════╝ ╚══════╝╚═════╝ ╚══════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝  ╚═╝')}`,
     ];
 
     this.addChild(
