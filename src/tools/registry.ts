@@ -14,7 +14,7 @@ import { cronTool, CRON_TOOL_DESCRIPTION } from './cron/cron-tool.js';
 import { memoryGetTool, MEMORY_GET_DESCRIPTION, memorySearchTool, MEMORY_SEARCH_DESCRIPTION, memoryUpdateTool, MEMORY_UPDATE_DESCRIPTION } from './memory/index.js';
 import { discoverSkills } from '../skills/index.js';
 import { createSpawnSubagent, SPAWN_SUBAGENT_DESCRIPTION } from './subagent/spawn-subagent.js';
-import { getTokenInfoTool, getDexDataTool, getWalletActivityTool, decodeTransactionTool, getTrendingTokensTool, getTokenHoldersTool } from './solana/index.js';
+import { getTokenInfoTool, getDexDataTool, getWalletActivityTool, decodeTransactionTool, getTrendingTokensTool, getTokenHoldersTool, getTokenSecurityTool, getGMGNTrendingTool, getGMGNTrenchesTool, getSmartMoneyTool, getKolTool, getPortfolioTool, getWalletActivityGMGNTool } from './solana/index.js';
 
 /**
  * A registered tool with its rich description for system prompt injection.
@@ -159,6 +159,56 @@ export function getToolRegistry(model: string): RegisteredTool[] {
       tool: getTokenHoldersTool,
       description: 'Get top holders of a Solana token with labels. Check concentration risk, whale presence, distribution health.',
       compactDescription: 'Top token holders with balances, supply %, and wallet labels.',
+      concurrencySafe: true,
+    },
+    // GMGN tools — advanced risk, smart money, trenches
+    {
+      name: 'get_token_security',
+      tool: getTokenSecurityTool,
+      description: 'Deep token security from GMGN: honeypot check, rug ratio, buy/sell tax, sniper count, insider hold rate, bundler activity, fresh wallet rate, smart degen/renowned holders, bluechip owner %, lock info, creator track record. Essential risk check.',
+      compactDescription: 'GMGN token security: honeypot, rug ratio, tax, snipers, insider/bundler risk, lock status.',
+      concurrencySafe: true,
+    },
+    {
+      name: 'get_gmgn_trending',
+      tool: getGMGNTrendingTool,
+      description: 'Trending Solana tokens from GMGN. Rank by volume, market cap, smart money, holders. Includes sniper count, smart degen/renowned stats, honeypot filter. More granular than Birdeye.',
+      compactDescription: 'GMGN trending tokens with smart money data, sniper counts, and risk filters.',
+      concurrencySafe: true,
+    },
+    {
+      name: 'get_gmgn_trenches',
+      tool: getGMGNTrenchesTool,
+      description: 'New token launches from GMGN trenches — Pump.fun, letsbonk, bonkers, moonshot, ray_launchpad. Track new creations, near-completion bonding curves, and completed tokens. For finding launches before DEX listing.',
+      compactDescription: 'New token launches: Pump.fun, bonding curve stage, platform, holder counts.',
+      concurrencySafe: true,
+    },
+    {
+      name: 'get_smart_money',
+      tool: getSmartMoneyTool,
+      description: 'Recent smart money trades from GMGN. See what profitable wallets are buying/selling. Token, amount, price, tx hash. Follow smart money into (or out of) positions.',
+      compactDescription: 'Smart money buy/sell trades with token, amount, wallet, and tx hash.',
+      concurrencySafe: true,
+    },
+    {
+      name: 'get_kol_trades',
+      tool: getKolTool,
+      description: 'KOL (Key Opinion Leader) trades from GMGN. Track influencer buys/sells to detect narrative shifts and early adoption.',
+      compactDescription: 'KOL/influencer trades: what notable traders are buying or selling.',
+      concurrencySafe: true,
+    },
+    {
+      name: 'get_gmgn_portfolio',
+      tool: getPortfolioTool,
+      description: 'Wallet portfolio from GMGN with full PnL: unrealized/realized profit per token, avg buy price, current value. Better PnL tracking than Helius for wallet analysis.',
+      compactDescription: 'Wallet holdings with unrealized/realized PnL, avg buy price, current value.',
+      concurrencySafe: true,
+    },
+    {
+      name: 'get_gmgn_wallet_activity',
+      tool: getWalletActivityGMGNTool,
+      description: 'Wallet trade history from GMGN. Individual buy/sell trades with token, amounts, prices, timestamps. Complements Helius activity with GMGN smart labeling.',
+      compactDescription: 'GMGN wallet trade history with smart labeling and degen classification.',
       concurrencySafe: true,
     },
   ];
