@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0d0221"/>
+      <stop offset="50%" style="stop-color:#150535"/>
+      <stop offset="100%" style="stop-color:#0a0a0a"/>
+    </linearGradient>
+    <linearGradient id="sol" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#b47aff"/>
+      <stop offset="100%" style="stop-color:#9945FF"/>
+    </linearGradient>
+    <linearGradient id="dext" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#7ec8f8"/>
+      <stop offset="100%" style="stop-color:#14F195"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#9945FF"/>
+      <stop offset="50%" style="stop-color:#14F195"/>
+      <stop offset="100%" style="stop-color:#7ec8f8"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glow-strong">
+      <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="400" fill="url(#bg)"/>
+
+  <!-- Grid lines (subtle) -->
+  <g opacity="0.05" stroke="#14F195" stroke-width="0.5">
+    <line x1="0" y1="50" x2="1200" y2="50"/>
+    <line x1="0" y1="100" x2="1200" y2="100"/>
+    <line x1="0" y1="150" x2="1200" y2="150"/>
+    <line x1="0" y1="200" x2="1200" y2="200"/>
+    <line x1="0" y1="250" x2="1200" y2="250"/>
+    <line x1="0" y1="300" x2="1200" y2="300"/>
+    <line x1="0" y1="350" x2="1200" y2="350"/>
+    <line x1="200" y1="0" x2="200" y2="400"/>
+    <line x1="400" y1="0" x2="400" y2="400"/>
+    <line x1="600" y1="0" x2="600" y2="400"/>
+    <line x1="800" y1="0" x2="800" y2="400"/>
+    <line x1="1000" y1="0" x2="1000" y2="400"/>
+  </g>
+
+  <!-- Solana logo abstract (concentric arcs) -->
+  <g transform="translate(80, 145)" filter="url(#glow-strong)" opacity="0.6">
+    <path d="M 0 0 L 40 -20 L 80 0 L 40 20 Z" fill="none" stroke="url(#sol)" stroke-width="1.5"/>
+    <path d="M 10 30 L 50 10 L 90 30 L 50 50 Z" fill="none" stroke="url(#dext)" stroke-width="1.5"/>
+    <path d="M -5 60 L 35 40 L 75 60 L 35 80 Z" fill="none" stroke="url(#accent)" stroke-width="1.0"/>
+  </g>
+
+  <!-- Main title: SOL in purple, DEXTER in pastel blue -->
+  <text x="200" y="180" font-family="'SF Pro Display', 'Segoe UI', system-ui, sans-serif" font-size="120" font-weight="800" letter-spacing="-2">
+    <tspan fill="url(#sol)" filter="url(#glow)">SOL</tspan><tspan fill="url(#dext)" filter="url(#glow)">DEXTER</tspan>
+  </text>
+
+  <!-- Tagline -->
+  <text x="200" y="230" font-family="'SF Pro Display', 'Segoe UI', system-ui, sans-serif" font-size="22" fill="#888" letter-spacing="6" font-weight="300">
+    AUTONOMOUS SOLANA RESEARCH AGENT
+  </text>
+
+  <!-- Accent line -->
+  <rect x="200" y="250" width="200" height="2" fill="url(#accent)" opacity="0.8" rx="1"/>
+
+  <!-- Feature pills -->
+  <g transform="translate(200, 280)">
+    <!-- Token Analysis -->
+    <rect x="0" y="0" width="140" height="32" rx="16" fill="none" stroke="#b47aff" stroke-width="1" opacity="0.6"/>
+    <text x="70" y="21" font-family="'SF Mono', 'Fira Code', monospace" font-size="12" fill="#b47aff" text-anchor="middle">TOKEN ANALYSIS</text>
+
+    <!-- DEX Data -->
+    <rect x="155" y="0" width="110" height="32" rx="16" fill="none" stroke="#7ec8f8" stroke-width="1" opacity="0.6"/>
+    <text x="210" y="21" font-family="'SF Mono', 'Fira Code', monospace" font-size="12" fill="#7ec8f8" text-anchor="middle">DEX DATA</text>
+
+    <!-- Wallet Intel -->
+    <rect x="280" y="0" width="130" height="32" rx="16" fill="none" stroke="#14F195" stroke-width="1" opacity="0.6"/>
+    <text x="345" y="21" font-family="'SF Mono', 'Fira Code', monospace" font-size="12" fill="#14F195" text-anchor="middle">WALLET INTEL</text>
+
+    <!-- TX Decode -->
+    <rect x="425" y="0" width="125" height="32" rx="16" fill="none" stroke="#b47aff" stroke-width="1" opacity="0.6"/>
+    <text x="487" y="21" font-family="'SF Mono', 'Fira Code', monospace" font-size="12" fill="#b47aff" text-anchor="middle">TX DECODE</text>
+
+    <!-- Market Scan -->
+    <rect x="565" y="0" width="135" height="32" rx="16" fill="none" stroke="#7ec8f8" stroke-width="1" opacity="0.6"/>
+    <text x="632" y="21" font-family="'SF Mono', 'Fira Code', monospace" font-size="12" fill="#7ec8f8" text-anchor="middle">MARKET SCAN</text>
+
+    <!-- Holders -->
+    <rect x="715" y="0" width="110" height="32" rx="16" fill="none" stroke="#14F195" stroke-width="1" opacity="0.6"/>
+    <text x="770" y="21" font-family="'SF Mono', 'Fira Code', monospace" font-size="12" fill="#14F195" text-anchor="middle">HOLDERS</text>
+  </g>
+
+  <!-- Bottom bar -->
+  <rect x="0" y="370" width="1200" height="30" fill="#0d0221" opacity="0.8"/>
+  <text x="600" y="389" font-family="'SF Mono', 'Fira Code', monospace" font-size="11" fill="#555" text-anchor="middle">
+    github.com/aegntic/soldexter · MIT License · by @aegntix
+  </text>
+
+  <!-- Corner decoration -->
+  <g opacity="0.15">
+    <circle cx="1150" cy="50" r="80" fill="none" stroke="#9945FF" stroke-width="0.5"/>
+    <circle cx="1150" cy="50" r="60" fill="none" stroke="#14F195" stroke-width="0.5"/>
+    <circle cx="1150" cy="50" r="40" fill="none" stroke="#7ec8f8" stroke-width="0.5"/>
+  </g>
+</svg>

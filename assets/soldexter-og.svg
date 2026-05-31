@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0d0221"/>
+      <stop offset="100%" style="stop-color:#0a0a0a"/>
+    </linearGradient>
+    <linearGradient id="sol" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#b47aff"/>
+      <stop offset="100%" style="stop-color:#9945FF"/>
+    </linearGradient>
+    <linearGradient id="dext" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#7ec8f8"/>
+      <stop offset="100%" style="stop-color:#14F195"/>
+    </linearGradient>
+    <linearGradient id="line" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#9945FF"/>
+      <stop offset="100%" style="stop-color:#14F195"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1280" height="640" fill="url(#bg)"/>
+
+  <!-- Title -->
+  <text x="640" y="260" font-family="system-ui, sans-serif" font-size="96" font-weight="800" text-anchor="middle" letter-spacing="-2">
+    <tspan fill="url(#sol)">SOL</tspan><tspan fill="url(#dext)">DEXTER</tspan>
+  </text>
+
+  <!-- Tagline -->
+  <text x="640" y="320" font-family="system-ui, sans-serif" font-size="28" fill="#888" text-anchor="middle" letter-spacing="8" font-weight="300">
+    AUTONOMOUS SOLANA RESEARCH AGENT
+  </text>
+
+  <!-- Accent line -->
+  <rect x="440" y="350" width="400" height="2" fill="url(#line)" rx="1" opacity="0.7"/>
+
+  <!-- Subtitle -->
+  <text x="640" y="410" font-family="system-ui, sans-serif" font-size="20" fill="#666" text-anchor="middle">
+    Token Intelligence · DEX Analytics · Wallet Forensics · TX Decode
+  </text>
+
+  <!-- URL -->
+  <text x="640" y="500" font-family="monospace" font-size="16" fill="#444" text-anchor="middle">
+    github.com/aegntic/soldexter
+  </text>
+</svg>
