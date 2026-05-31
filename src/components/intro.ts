@@ -1,4 +1,5 @@
 import { Container, Spacer, Text } from '@mariozechner/pi-tui';
+import chalk from 'chalk';
 import packageJson from '../../package.json';
 import { getModelDisplayName } from '../utils/model.js';
 import { theme } from '../theme.js';
@@ -33,22 +34,23 @@ export class IntroComponent extends Container {
     this.addChild(new Text(theme.primary('═'.repeat(INTRO_WIDTH)), 0, 0));
     this.addChild(new Spacer(1));
 
+    // SOL in purple with violet shadow, DEXTER in pastel blue with blue shadow
+    const solPurple = chalk.hex('#b47aff');
+    const violetShadow = chalk.hex('#6a3aa8');
+    const dextBlue = chalk.hex('#7ec8f8');
+    const blueShadow = chalk.hex('#3a6a9a');
+
+    const bannerLines = [
+      ` ${violetShadow('███████╗')}${blueShadow('███████╗')} ${blueShadow('████████╗')} ${blueShadow('███████╗██╗███████╗██████╗')}`,
+      ` ${violetShadow('██╔════╝')}${blueShadow('██╔════╝')}${blueShadow('██╔═══██╗')}${blueShadow('██╔════╝╚██╗██╔╝╚══██╔══╝██╔════╝██╔══██╗')}`,
+      ` ${solPurple('███████╗')}${dextBlue('█████╗')}  ${dextBlue('██║   ██║')}${dextBlue('███████╗██║█████╗   ██║   █████╗  ██████╔╝')}`,
+      ` ${violetShadow('╚════██║')}${blueShadow('██╔══╝')}  ${blueShadow('██║▄▄ ██║')}${blueShadow('╚════██║██║██╔══╝   ██║   ██╔══╝  ██╔══██╗')}`,
+      ` ${violetShadow('███████║')}${blueShadow('███████╗')}${blueShadow('╚██████╔╝')}${blueShadow('███████║██║███████╗██║   ███████╗██║  ██║')}`,
+      ` ${violetShadow('╚══════╝')}${blueShadow('╚══════╝')}${blueShadow(' ╚══▀▀═╝')}${blueShadow(' ╚══════╝╚═╝╚══════╝╚═╝   ╚══════╝╚═╝  ╚═╝')}`,
+    ];
+
     this.addChild(
-      new Text(
-        theme.bold(
-          theme.primary(
-            `
- ███████╗███████╗ ██████╗ ███████╗██╗███████╗██████╗
- ██╔════╝██╔════╝██╔═══██╗██╔════╝██║██╔════╝╚════██╗
- ███████╗█████╗  ██║   ██║███████╗██║█████╗   █████╔╝
- ╚════██║██╔══╝  ██║▄▄ ██║╚════██║██║██╔══╝  ██╔═══╝
- ███████║███████╗╚██████╔╝███████║██║███████╗███████╗
- ╚══════╝╚══════╝ ╚══▀▀═╝ ╚══════╝╚═╝╚══════╝╚══════╝`,
-          ),
-        ),
-        0,
-        0,
-      ),
+      new Text('\n' + bannerLines.join('\n'), 0, 0),
     );
 
     this.addChild(new Spacer(1));
