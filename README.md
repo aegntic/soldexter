@@ -1,11 +1,6 @@
-```text
-███████╗ ██████╗ ██╗     ██████╗ ███████╗██╗  ██╗████████╗███████╗██████╗ 
-██╔════╝██╔═══██╗██║     ██╔══██╗██╔════╝╚██╗██╔╝╚══██╔══╝██╔════╝██╔══██╗
-███████╗██║   ██║██║     ██║  ██║█████╗   ╚███╔╝    ██║   █████╗  ██████╔╝
-╚════██║██║   ██║██║     ██║  ██║██╔══╝   ██╔██╗    ██║   ██╔══╝  ██╔══██╗
-███████║╚██████╔╝███████╗██████╔╝███████╗██╔╝ ██╗   ██║   ███████╗██║  ██║
-╚══════╝ ╚═════╝ ╚══════╝╚═════╝ ╚══════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝  ╚═╝
-```
+<p align="center">
+  <img src="assets/soldexter-banner.png" alt="Soldexter banner" width="100%">
+</p>
 
 <p align="center">
   <strong>Autonomous Solana research & trading intelligence agent.</strong><br>
@@ -24,7 +19,7 @@
 ---
 
 <p align="center">
-  <img src="assets/soldexter-terminal-mockup.svg" alt="Soldexter terminal session" width="90%">
+  <img src="assets/soldexter-terminal-mockup.png" alt="Soldexter terminal session" width="90%">
 </p>
 
 ## What is Soldexter?
