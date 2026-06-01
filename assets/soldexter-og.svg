@@ -1,20 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#0d0221"/>
-      <stop offset="100%" style="stop-color:#0a0a0a"/>
+      <stop offset="0%" style="stop-color:#070a12"/>
+      <stop offset="100%" style="stop-color:#0a101b"/>
     </linearGradient>
     <linearGradient id="sol" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#b47aff"/>
-      <stop offset="100%" style="stop-color:#9945FF"/>
+      <stop offset="0%" style="stop-color:#8b7dff"/>
+      <stop offset="100%" style="stop-color:#5f6cff"/>
     </linearGradient>
     <linearGradient id="dext" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" style="stop-color:#7ec8f8"/>
-      <stop offset="100%" style="stop-color:#14F195"/>
+      <stop offset="100%" style="stop-color:#3fd6c2"/>
     </linearGradient>
     <linearGradient id="line" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#9945FF"/>
-      <stop offset="100%" style="stop-color:#14F195"/>
+      <stop offset="0%" style="stop-color:#6d7dff"/>
+      <stop offset="100%" style="stop-color:#3fd6c2"/>
     </linearGradient>
   </defs>
 
@@ -26,7 +26,7 @@
   </text>
 
   <!-- Tagline -->
-  <text x="640" y="320" font-family="system-ui, sans-serif" font-size="28" fill="#888" text-anchor="middle" letter-spacing="8" font-weight="300">
+  <text x="640" y="320" font-family="system-ui, sans-serif" font-size="28" fill="#a0a9ba" text-anchor="middle" letter-spacing="8" font-weight="300">
     AUTONOMOUS SOLANA RESEARCH AGENT
   </text>
 
@@ -34,12 +34,12 @@
   <rect x="440" y="350" width="400" height="2" fill="url(#line)" rx="1" opacity="0.7"/>
 
   <!-- Subtitle -->
-  <text x="640" y="410" font-family="system-ui, sans-serif" font-size="20" fill="#666" text-anchor="middle">
+  <text x="640" y="410" font-family="system-ui, sans-serif" font-size="20" fill="#7d889d" text-anchor="middle">
     Token Intelligence · DEX Analytics · Wallet Forensics · TX Decode
   </text>
 
   <!-- URL -->
-  <text x="640" y="500" font-family="monospace" font-size="16" fill="#444" text-anchor="middle">
+  <text x="640" y="500" font-family="monospace" font-size="16" fill="#6b7690" text-anchor="middle">
     github.com/aegntic/soldexter
   </text>
 </svg>
