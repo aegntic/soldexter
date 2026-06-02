@@ -34,10 +34,12 @@ export class IntroComponent extends Container {
     this.addChild(new Text(theme.primary('═'.repeat(INTRO_WIDTH)), 0, 0));
     this.addChild(new Spacer(1));
 
-    // Banner art with per-character drop shadows.
-    // The "shadow" is the non-solid double-line characters (╔╗╚╝═║) placed below and right of each solid letter.
-    // SOL (first 3 letters): solid █ (and baked letter doubles) in lighter purple; drop shadow doubles in current purple.
-    // DEXTER: solid █ (and baked letter doubles) in white; drop shadow doubles in blue.
+    // Banner art with tight per-letter drop shadows using non-solid double-line chars.
+    // Shadow doubles (╔╗╚╝═║) are placed +1 row and +1 col from the solid letter parts that cast them.
+    // SOL (cols 0-25, first 3 letters): solid █ + baked edges in lighter purple (#c084fc);
+    //   their cast drop-shadow doubles in purple (#b47aff).
+    // DEXTER: solid in white; cast drop-shadow doubles in blue (#258bff).
+    // Implemented by laying main solids first, then overlaying only-double shadows in the offset cells (main wins on overlap).
     const solMain = chalk.hex('#c084fc').bold;   // lighter purple for SOL solid letters
     const solShadow = chalk.hex('#b47aff').bold; // current purple for SOL drop-shadow doubles
     const dextMain = chalk.hex('#ffffff').bold;  // white for DEXTER solid letters
@@ -52,51 +54,58 @@ export class IntroComponent extends Container {
       " ╚══════╝ ╚═════╝ ╚══════╝╚═════╝ ╚══════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝  ╚═╝"
     ];
 
-    function colorMainLine(line: string): string {
-      let res = "";
-      const SOL_END = 26; // D of DEXTER starts at col 26; 0-25 covers first 3 letters S O L
-      for (let i = 0; i < line.length; i++) {
-        const ch = line[i];
-        const inSOL = i < SOL_END;
-        const isSolid = ch === "█";
-        const isDouble = "╔╗╚╝═║".indexOf(ch) !== -1;
+    const rawLines = bannerArtLines;
+    const W = rawLines[0].length; // 75 visual cols
+
+    // 7 rows: 0-5 hold the main solid letters; row 6 holds the bottom cast of the last row's shadow.
+    // Each cell holds either ' ' or a chalk-colored single-char string (ANSI-wrapped).
+    const cellRows: string[][] = Array.from({ length: 7 }, () => Array(W + 5).fill(' '));
+
+    // 1. Place the solid letters (█ fills + any baked-in double edges that are part of the letter design)
+    //    using the main color for the group (SOL lighter purple, DEXTER white).
+    for (let r = 0; r < 6; r++) {
+      const line = rawLines[r];
+      for (let c = 0; c < line.length; c++) {
+        const ch = line[c];
+        const inSOL = c < 26;
+        const isSolid = ch === '█';
+        const isDouble = '╔╗╚╝═║'.indexOf(ch) !== -1;
         if (isSolid || isDouble) {
-          // full solid letter (█ fills + its edge doubles) colored in main hue
-          res += (inSOL ? solMain : dextMain)(ch);
-        } else {
-          res += ch;
+          const colorFn = inSOL ? solMain : dextMain;
+          cellRows[r][c] = colorFn(ch);
+        } else if (ch !== ' ') {
+          cellRows[r][c] = ch;
         }
       }
-      return res;
     }
 
-    function makeShadowDrops(line: string): string {
-      let res = "";
-      const SOL_END = 26;
-      for (let i = 0; i < line.length; i++) {
-        const ch = line[i];
-        const inSOL = i < SOL_END;
-        const isDouble = "╔╗╚╝═║".indexOf(ch) !== -1;
-        if (isDouble) {
-          // shadow layer = ONLY the non-solid double-line chars (no █), in shadow hue
-          res += (inSOL ? solShadow : dextShadow)(ch);
-        } else {
-          res += " ";
+    // 2. Cast the drop shadows: for every double-line char in the raw art, place a copy
+    //    at (row+1, col+1) using only the shadow color. Do not overwrite main solids.
+    for (let r = 0; r < 6; r++) {
+      const line = rawLines[r];
+      const targetR = r + 1;
+      if (targetR >= 7) continue;
+      for (let c = 0; c < line.length; c++) {
+        const ch = line[c];
+        if ('╔╗╚╝═║'.indexOf(ch) !== -1) {
+          const inSOL = c < 26;
+          const colorFn = inSOL ? solShadow : dextShadow;
+          const targetC = c + 1;
+          if (cellRows[targetR][targetC] === ' ') {
+            cellRows[targetR][targetC] = colorFn(ch);
+          }
         }
       }
-      return res;
     }
 
-    const mainBannerLines = bannerArtLines.map(colorMainLine);
-    const shadowBannerLines = bannerArtLines.map(makeShadowDrops);
+    // 3. Assemble into colored lines (one Text block). Shadow doubles now appear inside
+    //    the banner, immediately below + right of the solid letters that cast them.
+    const bannerOutputLines = cellRows
+      .map((cells) => cells.join('').replace(/\s+$/, ''))
+      .filter((line, idx) => line.length > 0 || idx < 6);
 
-    // Render main solid letters, then the drop-shadow copy below (right-shifted by " " prefix).
-    // Shadow block contains purely the non-solid double line chars below+right of the solids.
     this.addChild(
-      new Text("\n" + mainBannerLines.join("\n"), 0, 0),
-    );
-    this.addChild(
-      new Text(shadowBannerLines.map(l => " " + l).join("\n"), 0, 0),
+      new Text('\n' + bannerOutputLines.join('\n'), 0, 0),
     );
 
     this.addChild(new Spacer(1));
