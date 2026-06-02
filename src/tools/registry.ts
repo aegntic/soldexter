@@ -1,4 +1,6 @@
-import { StructuredToolInterface } from '@langchain/core/tools';
+import { StructuredToolInterface, DynamicStructuredTool } from '@langchain/core/tools';
+import { z } from 'zod';
+import { scoreWallet } from '../bridge/index.js';
 import { exaSearch, perplexitySearch, tavilySearch, langSearch, WEB_SEARCH_DESCRIPTION, xSearchTool, X_SEARCH_DESCRIPTION } from './search/index.js';
 import { createWebSearchTool, type WebSearchProvider } from './search/web-search.js';
 import { getSetting } from '../utils/config.js';
@@ -31,6 +33,22 @@ export interface RegisteredTool {
   /** Whether this tool can safely execute concurrently with other concurrent-safe tools. */
   concurrencySafe: boolean;
 }
+
+const scoreWalletTool = new DynamicStructuredTool({
+  name: 'score_wallet',
+  description:
+    'Score a wallet using 5-layer alpha model (Inverse Loss, Liquidity Ghost, Conviction, CTO Meta, Consensus). ' +
+    'Returns tier (PRECOGNITIVE/SOVEREIGN/EMERGING/Noise), composite score, and rationale. ' +
+    'Use after gathering wallet activity.',
+  schema: z.object({
+    address: z.string().describe('Solana wallet address'),
+  }),
+  func: async ({ address }) => {
+    return `Wallet scoring requires trade history and liquidity event data for ${address}. ` +
+      `Please gather wallet activity first using get_wallet_activity or get_gmgn_wallet_activity, ` +
+      `then call score_wallet again with the full trade history and liquidity events.`;
+  },
+});
 
 /**
  * Get all registered tools with their descriptions.
@@ -209,6 +227,13 @@ export function getToolRegistry(model: string): RegisteredTool[] {
       tool: getWalletActivityGMGNTool,
       description: 'Wallet trade history from GMGN. Individual buy/sell trades with token, amounts, prices, timestamps. Complements Helius activity with GMGN smart labeling.',
       compactDescription: 'GMGN wallet trade history with smart labeling and degen classification.',
+      concurrencySafe: true,
+    },
+    {
+      name: 'score_wallet',
+      tool: scoreWalletTool,
+      description: 'Score a wallet using 5-layer alpha model (Inverse Loss, Liquidity Ghost, Conviction, CTO Meta, Consensus). Returns tier (PRECOGNITIVE/SOVEREIGN/EMERGING/Noise), composite score, and rationale. Use after gathering wallet activity.',
+      compactDescription: '5-layer wallet alpha score: tier, composite score, and layer breakdown.',
       concurrencySafe: true,
     },
   ];

@@ -1,5 +1,9 @@
 import { DynamicStructuredTool } from "@langchain/core/tools";
 import { z } from "zod";
+import { getDexData } from "../../providers/birdeye";
+import { getTokenSecurity } from "../../providers/gmgn";
+import type { TokenSecurity } from "../../providers/gmgn";
+import { getTokenInfo } from "../../providers/helius";
 
 /**
  * Valuation bridge tool — calls solagent-valuation Rust crate via CLI binary.
@@ -58,28 +62,78 @@ export const getTokenValuationTool = new DynamicStructuredTool({
   }),
   func: async ({ mint, safety_score_override, fee_rate_override }) => {
     try {
-      // Gather on-chain data from soldexter providers
-      // In production this calls Birdeye/GMGN/Helius APIs
-      // For now construct from available data or use stubs
+      // Fetch on-chain data from providers in parallel
+      const [dexResult, infoResult, securityResult] = await Promise.allSettled([
+        getDexData(mint),
+        getTokenInfo(mint),
+        getTokenSecurity(mint),
+      ]);
+
+      if (dexResult.status === "rejected") {
+        console.warn(`[valuation-bridge] Birdeye getDexData failed for ${mint}: ${dexResult.reason?.message}`);
+      }
+      if (infoResult.status === "rejected") {
+        console.warn(`[valuation-bridge] Helius getTokenInfo failed for ${mint}: ${infoResult.reason?.message}`);
+      }
+      if (securityResult.status === "rejected") {
+        console.warn(`[valuation-bridge] GMGN getTokenSecurity failed for ${mint}: ${securityResult.reason?.message}`);
+      }
+
+      const dexData = dexResult.status === "fulfilled" ? dexResult.value : null;
+      const tokenInfo = infoResult.status === "fulfilled" ? infoResult.value : null;
+      const security = securityResult.status === "fulfilled" ? securityResult.value : null;
+
+      const current_price = dexData?.price_usd ?? 0;
+      const market_cap = dexData?.market_cap ?? 0;
+      const volume_24h = dexData?.volume_24h ?? 0;
+      const liquidity_usd = dexData?.liquidity_usd ?? 0;
+
+      // token_supply: prefer Helius supply (adjusted for decimals), fallback to market_cap / price
+      let token_supply = 0;
+      if (tokenInfo?.supply && tokenInfo.decimals >= 0) {
+        try {
+          const raw = BigInt(tokenInfo.supply);
+          const div = BigInt(10) ** BigInt(tokenInfo.decimals);
+          const calculated = Number(raw) / Number(div);
+          if (Number.isFinite(calculated) && calculated > 0) {
+            token_supply = calculated;
+          }
+        } catch {
+          // ignore, fallback below
+        }
+      }
+      if (token_supply === 0 && current_price > 0 && market_cap > 0) {
+        token_supply = market_cap / current_price;
+      }
+
+      const token_symbol = tokenInfo?.symbol || "UNKNOWN";
+      const holder_count = security?.holder_count ?? 0;
+
+      // Derive safety score from GMGN security data, allow override
+      let safety_score = safety_score_override ?? 50;
+      if (security && safety_score_override === undefined) {
+        safety_score = deriveSafetyScore(security);
+      }
+
+      const fee_rate = fee_rate_override ?? 0.003;
 
       const input: ValuationInput = {
         token_address: mint,
-        token_symbol: "UNKNOWN",
-        current_price: 0,
-        market_cap: 0,
-        token_supply: 0,
-        volume_24h: 0,
-        volume_30d: 0,
+        token_symbol,
+        current_price,
+        market_cap,
+        token_supply,
+        volume_24h,
+        volume_30d: volume_24h * 30,
         volume_growth_30d: 0,
-        fee_rate: fee_rate_override ?? 0.003,
-        holder_count: 0,
+        fee_rate,
+        holder_count,
         holder_growth_30d: 0,
-        safety_score: safety_score_override ?? 50,
-        liquidity_usd: 0,
+        safety_score,
+        liquidity_usd,
         realized_vol_30d: 0,
       };
 
-      // Try to call the Rust valuation binary
       const report = await callValuationBinary(input);
       return formatReport(report);
     } catch (e: any) {
@@ -89,24 +143,41 @@ export const getTokenValuationTool = new DynamicStructuredTool({
 });
 
 /**
+ * Derive a 0-100 safety score from GMGN TokenSecurity data.
+ */
+function deriveSafetyScore(s: TokenSecurity): number {
+  if (s.is_honeypot) return 0;
+
+  let score = 50;
+  score -= s.rug_ratio * 30;
+  score -= s.buy_tax * 20;
+  score -= s.sell_tax * 20;
+  score -= s.suspected_insider_hold_rate * 15;
+  score -= s.fresh_wallet_rate * 10;
+  score -= s.rat_trader_amount_rate * 10;
+  score += s.renounced ? 10 : 0;
+  score += s.lock_info?.is_locked ? 10 : 0;
+  score += Math.min(s.bluechip_owner_pct * 20, 15);
+
+  return Math.max(0, Math.min(100, score));
+}
+
+/**
  * Call solagent-valuation Rust binary.
  * Binary reads JSON from stdin, writes ValuationReport JSON to stdout.
  */
 async function callValuationBinary(input: ValuationInput): Promise<ValuationReport> {
-  const { execFile } = await import("child_process");
-  const { promisify } = await import("util");
-  const execFileAsync = promisify(execFile);
+  const { execFileSync } = await import("child_process");
 
   const binaryPath = process.env.VALUATION_BINARY_PATH
     ?? "../rektdexter/engine/target/debug/solagent-valuation";
 
-  const inputJson = JSON.stringify(input);
-
   try {
-    const { stdout } = await execFileAsync(binaryPath, ["valuate"], {
-      input: inputJson,
+    const stdout = execFileSync(binaryPath, ["valuate"], {
+      input: JSON.stringify(input),
       timeout: 30000,
       maxBuffer: 1024 * 1024,
+      encoding: "utf-8",
     });
     return JSON.parse(stdout) as ValuationReport;
   } catch (e: any) {
