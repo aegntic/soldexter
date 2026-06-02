@@ -39,20 +39,32 @@ It decomposes complex questions into multi-step research plans, executes 6+ tool
 
 ## Quick Start
 
-```bash
-# Clone
-git clone https://github.com/aegntic/soldexter.git
-cd soldexter
+The recommended way is the **in-app guided setup** (built exactly for this):
 
-# Install
+```bash
+# After clone + install
+cd soldexter
 bun install
 
-# Set up API keys (at minimum Helius + Birdeye)
-export HELIUS_API_KEY=your_helius_key
-export BIRDEYE_API_KEY=your_birdeye_key
-export OPENAI_API_KEY=your_openai_key  # or use ollama for local
+# Just run it
+bun run dev          # or the installed `soldexter` binary
+```
 
-# Run
+On first launch (or while critical keys are missing) Soldexter shows a rich, step-by-step walkthrough:
+
+- Clear explanations of the *real* capabilities each key unlocks (on-chain forensics, smart-money detection, accurate pricing + momentum, the reasoning engine, etc.).
+- "Why this is worth your time" value hooks and attention-grabbing examples ("ask which wallets bought in the first 5 min and are still holding").
+- Direct paste prompts with full context.
+- After you add a key you immediately see proof it is working (the agent becomes dramatically more powerful in front of your eyes).
+
+You can still set keys the old way (exports or .env) — the app will detect them and skip the corresponding steps.
+
+Manual (for CI / advanced):
+
+```bash
+export HELIUS_API_KEY=...
+export BIRDEYE_API_KEY=...
+export OPENAI_API_KEY=...   # or ANTHROPIC_*, XAI_*, GOOGLE_*, or run local Ollama
 bun run dev
 ```
 

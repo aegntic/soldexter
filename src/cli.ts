@@ -11,6 +11,12 @@ import {
   getApiKeyNameForSearchProvider,
   getProviderDisplayName,
   getSearchProviderDisplayName,
+  isCoreSetupComplete,
+  getMissingCoreSetupItems,
+  getSetupValueHook,
+  getSetupHowToGet,
+  saveApiKeyToEnv,
+  getCoreSetupItems,
 } from './utils/env.js';
 import { dexterPath } from './utils/paths.js';
 import { defaultQueue } from './utils/message-queue.js';
@@ -787,12 +793,117 @@ export async function runCli() {
     tui.requestRender();
   };
 
+  /**
+   * Nested because it needs to close over lots of runCli locals (root, chatLog, createScreen,
+   * restoreMainView, updateView, the controllers, tui, etc).
+   * Delivers the rich, intuitive, value-hook-filled initial setup the user asked for.
+   */
+  async function runInitialSetupWalkthrough(): Promise<void> {
+    const missing = getMissingCoreSetupItems();
+    if (missing.length === 0) return;
+
+    // === Rich narrative + attention/value hooks in the chat log (persists after overlays) ===
+    chatLog.addChild(new Spacer(1));
+    chatLog.addChild(new Text(theme.bold(theme.primary('✨ One-time setup — this is where the real power turns on')), 0, 0));
+    chatLog.addChild(
+      new Text(
+        theme.muted(
+          'Soldexter shines when it has live Solana data (Helius + Birdeye) and a strong reasoning model. ' +
+            'Below you\'ll see exactly what each key unlocks and get live proof the moment it is added.',
+        ),
+        0,
+        0,
+      ),
+    );
+    chatLog.addChild(new Spacer(1));
+
+    chatLog.addChild(new Text(theme.bold('High-value capabilities you activate:'), 0, 0));
+    for (const item of getCoreSetupItems()) {
+      chatLog.addChild(new Text(`• ${item.displayName}: ${item.valueHook.split('.')[0]}.`, 0, 0));
+    }
+    chatLog.addChild(new Spacer(1));
+    chatLog.addChild(new Text(theme.bold('We\'ll go step-by-step. After each key you\'ll see the exact value it just enabled.'), 0, 0));
+    chatLog.addChild(new Spacer(1));
+
+    for (const item of missing) {
+      chatLog.addChild(new Text(theme.primary(`▶ ${item.displayName}`), 0, 0));
+      chatLog.addChild(new Text(item.valueHook, 0, 0));
+      chatLog.addChild(new Text(theme.muted(item.howToGet), 0, 0));
+      chatLog.addChild(new Spacer(1));
+
+      if (item.isLLMGroup) {
+        chatLog.addChild(new Text(theme.muted('Launching the model/key selector (pick any provider you have a key for — OpenAI, Anthropic, xAI, local Ollama, etc.)...'), 0, 0));
+        tui.requestRender();
+        modelSelection.startSelection();
+        // Existing flow takes over via overlays. User returns here with context above.
+      } else {
+        // Direct rich prompt + input for Solana core keys (Helius, Birdeye) using the same UI primitives.
+        const input = new ApiKeyInputComponent(true);
+
+        const keyPromise = new Promise<string | null>((resolve) => {
+          input.onSubmit = (val) => resolve(val && val.trim() ? val.trim() : null);
+          input.onCancel = () => resolve(null);
+        });
+
+        const title = `Connect ${item.displayName}`;
+        const desc = `${item.valueHook}\n\n${item.howToGet}`;
+
+        const body = createScreen(title, desc, input, 'Paste key • Enter to save & continue • Esc to skip for now');
+        root.clear();
+        root.addChild(body);
+        tui.setFocus(input);
+        tui.requestRender();
+
+        const val = await keyPromise;
+
+        if (val) {
+          const saved = saveApiKeyToEnv(item.envVar, val);
+          if (saved) {
+            chatLog.addChild(new Text(theme.bold(theme.primary(`✅ ${item.displayName} connected — capability unlocked`)), 0, 0));
+            chatLog.addChild(new Text(theme.muted('Key stored in .env and hot-reloaded. The agent can immediately use on-chain / market tools powered by it.'), 0, 0));
+          } else {
+            chatLog.addChild(new Text(theme.error(`Failed to save ${item.envVar}. You can set it manually later.`), 0, 0));
+          }
+        } else {
+          chatLog.addChild(new Text(theme.muted(`Skipped ${item.displayName}. You can add it anytime — the agent will prompt when needed.`), 0, 0));
+        }
+
+        restoreMainView();
+        updateView();
+        tui.requestRender();
+      }
+      chatLog.addChild(new Spacer(1));
+    }
+
+    if (isCoreSetupComplete()) {
+      chatLog.addChild(new Text(theme.bold(theme.primary('🎉 Core setup complete. High-value mode activated.')), 0, 0));
+      chatLog.addChild(
+        new Text(
+          'Try these immediately to feel the return on the time you just invested:\n' +
+            '  "trending tokens with real liquidity"\n' +
+            '  "analyze wallet [paste address] — any smart money signals?"\n' +
+            '  "run a quick DCF valuation on [token]"',
+          0,
+          0,
+        ),
+      );
+      chatLog.addChild(new Spacer(1));
+    }
+
+    tui.requestRender();
+  }
+
   await inputHistory.init();
   for (const msg of inputHistory.getMessages().reverse()) {
     editor.addToHistoryWithTruncation(msg);
   }
   renderSelectionOverlay();
   refreshError();
+
+  // === THE KEY BIT: proactive rich setup walkthrough on first / incomplete runs ===
+  if (!isCoreSetupComplete()) {
+    await runInitialSetupWalkthrough();
+  }
 
   tui.start();
   await new Promise<void>((resolve) => {
