@@ -30,6 +30,7 @@ It decomposes complex questions into multi-step research plans, executes 6+ tool
 
 ### Key Features
 
+- **Rich TUI setup (2026-06 milestone)** — Attention-grabbing value hooks during first-run (e.g. "80% of what makes Soldexter feel like having a full research desk"), paste/enter/esc key input, immediate "capability unlocked". Verified e2e with real Helios + dummies; keys hot-reload live for tools. Polished banner with "GPT 4o mini" display.
 - **6 Solana-native tools** — Token analysis, DEX data, wallet forensics, TX decode, trending tokens, holder analysis
 - **Parallel execution** — Tools run concurrently with automatic cross-referencing
 - **Subagent spawning** — Delegate sub-tasks to isolated parallel agents

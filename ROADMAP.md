@@ -27,7 +27,8 @@ See SPEC.md for full agent spec.
 ## Milestones
 - v0.1.0: Core agent + tools.
 - v0.2.0: DCF valuation + rektdexter integration (current).
-- Tags, PRs.
+- TUI basic functional (2026-06 via Grok skills): rich attention/value-hook setup walkthrough, polished banner with "GPT 4o mini", keys hot-reload live, real Helios tools work, health baseline + stack in AGENTS. Verified e2e with proving commands. Commits dd7b372 etc. (phased, /terminal-ops /health /investigate etc.).
+- Tags, PRs, consistent hygiene (README/ROADMAP/TASKS updated at milestones).
 
 See TASKS.md. Update README/this on changes.
 
