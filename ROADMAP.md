@@ -29,6 +29,7 @@ See SPEC.md for full agent spec.
 - v0.2.0: DCF valuation + rektdexter integration (current).
 - TUI basic functional (2026-06 via Grok skills): rich attention/value-hook setup walkthrough, polished banner with "GPT 4o mini", keys hot-reload live, real Helios tools work, health baseline + stack in AGENTS. Verified e2e with proving commands. Commits dd7b372 etc. (phased, /terminal-ops /health /investigate etc.).
 - Tags, PRs, consistent hygiene (README/ROADMAP/TASKS updated at milestones).
+- RINGMASTER whats next list persisted + compound skills execution (terminal-ops for full real Helios e2e dogfood, /ship milestone, agent-native-audit on TUI+meta, compound-refresh, ubiquitous-language glossary) + rektdexter pivot (P0-P4 + REKT-DCF distinct). (2026-06 inspection via ~/.grok/skills).
 
 See TASKS.md. Update README/this on changes.
 
