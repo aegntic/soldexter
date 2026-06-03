@@ -6,16 +6,18 @@ const SETTINGS_FILE = dexterPath('settings.json');
 
 // Map legacy model IDs to provider IDs for migration
 const MODEL_TO_PROVIDER_MAP: Record<string, string> = {
-  'gpt-5.5': 'openai',
-  'gpt-5.4': 'openai',
-  'gpt-5.2': 'openai',
+  'gpt-4o-mini': 'openai',
+  'gpt-4o': 'openai',
+  'claude-3-5-sonnet-20241022': 'anthropic',
   'claude-sonnet-4-5': 'anthropic',
   'gemini-3': 'google',
 };
 
 // Deprecated model IDs to upgrade on load
 const DEPRECATED_MODEL_UPGRADES: Record<string, string> = {
-  'gpt-5.2': 'gpt-5.5',
+  'gpt-5.5': 'gpt-4o-mini',
+  'gpt-5.4': 'gpt-4o-mini',
+  'gpt-5.2': 'gpt-4o-mini',
 };
 
 interface Config {

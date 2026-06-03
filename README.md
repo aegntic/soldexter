@@ -30,6 +30,7 @@ It decomposes complex questions into multi-step research plans, executes 6+ tool
 
 ### Key Features
 
+- **Rich TUI setup (2026-06 milestone)** — Attention-grabbing value hooks during first-run (e.g. "80% of what makes Soldexter feel like having a full research desk"), paste/enter/esc key input, immediate "capability unlocked". Verified e2e with real Helios + dummies; keys hot-reload live for tools. Polished banner with "GPT 4o mini" display.
 - **6 Solana-native tools** — Token analysis, DEX data, wallet forensics, TX decode, trending tokens, holder analysis
 - **Parallel execution** — Tools run concurrently with automatic cross-referencing
 - **Subagent spawning** — Delegate sub-tasks to isolated parallel agents
@@ -39,20 +40,32 @@ It decomposes complex questions into multi-step research plans, executes 6+ tool
 
 ## Quick Start
 
-```bash
-# Clone
-git clone https://github.com/aegntic/soldexter.git
-cd soldexter
+The recommended way is the **in-app guided setup** (built exactly for this):
 
-# Install
+```bash
+# After clone + install
+cd soldexter
 bun install
 
-# Set up API keys (at minimum Helius + Birdeye)
-export HELIUS_API_KEY=your_helius_key
-export BIRDEYE_API_KEY=your_birdeye_key
-export OPENAI_API_KEY=your_openai_key  # or use ollama for local
+# Just run it
+bun run dev          # or the installed `soldexter` binary
+```
 
-# Run
+On first launch (or while critical keys are missing) Soldexter shows a rich, step-by-step walkthrough:
+
+- Clear explanations of the *real* capabilities each key unlocks (on-chain forensics, smart-money detection, accurate pricing + momentum, the reasoning engine, etc.).
+- "Why this is worth your time" value hooks and attention-grabbing examples ("ask which wallets bought in the first 5 min and are still holding").
+- Direct paste prompts with full context.
+- After you add a key you immediately see proof it is working (the agent becomes dramatically more powerful in front of your eyes).
+
+You can still set keys the old way (exports or .env) — the app will detect them and skip the corresponding steps.
+
+Manual (for CI / advanced):
+
+```bash
+export HELIUS_API_KEY=...
+export BIRDEYE_API_KEY=...
+export OPENAI_API_KEY=...   # or ANTHROPIC_*, XAI_*, GOOGLE_*, or run local Ollama
 bun run dev
 ```
 
@@ -218,3 +231,49 @@ Contributions are welcome. Open an issue or PR.
 <p align="center">
   <sub>Built with ☉ by <a href="https://x.com/aegntix">@aegntix</a> · Powered by <a href="https://helius.xyz">Helius</a>, <a href="https://birdeye.so">Birdeye</a>, <a href="https://station.jup.ag">Jupiter</a></sub>
 </p>
+
+## License
+
+Copyright (c) 2026 aegntic
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software **for personal use and development only**, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+**Commercial, re-sale, group, team, or enterprise use requires** a donation of $99 (or equivalent) to the maintainers (via GitHub Sponsors or specified) **and** prominent acknowledgement in the work and documentation.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+See full LICENSE file.
+
+## Tech Preferences
+
+- **Rust > TypeScript** for core logic where performance matters (delegate to rektdexter engine Rust crates for heavy work like valuation, recon).
+- Use **bun** for JavaScript/TypeScript (this harness, tools, skills).
+- Use **astral uv** for any Python components or scripts.
+- Prefer bun/uv for fast, reliable package management and execution in agent flows.
+
+## Roadmap & Tasks
+
+See [ROADMAP.md](ROADMAP.md) for high-level phases (agent features, DCF/valuation integration as fundamentals layer, subagent delegation, Solana tool expansion).
+
+See [TASKS.md](TASKS.md) or specs (SPEC.md, skills/*/SKILL.md, docs if any) for detailed tasks. Other devs welcome — fork, PR against roadmap.
+
+## Tags
+
+#soldexter #rektdexter #solana #ai-agent #dcf #valuation #fundamentals #bun #uv #rust #paper-trade
+
+## Versioning & Checkpoints
+
+Version in package.json bumped on milestones (e.g. new skills, integrations). Conventional commits, PRs. Git tags (v0.2.0). Update this README and ROADMAP on changes.
+
+Current: DCF/valuation skill + bridge to rektdexter as high-level edge.
+
+## Contributing
+
+1. Align to roadmap/TASKS.
+2. Use Rust for core via rektdexter engine when possible.
+3. bun/uv only.
+4. Paper trade first, explicit opt-in for live.
+5. Update docs/README/ROADMAP.
+6. License: personal/dev free; commercial/group/enterprise $99 donation + ack.

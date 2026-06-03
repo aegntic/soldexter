@@ -18,3 +18,12 @@ Credits:
 bun install
 bun run dev
 ```
+
+## Health Stack
+- typecheck: bun run typecheck
+- test: bun test
+- deadcode: npx knip
+- shell: shellcheck scripts/release.sh
+- gbrain: gbrain doctor --json (wrapped in timeout 5s)
+
+(Lint: none configured/detected. Update this section or re-run /health to adjust.)
