@@ -48,8 +48,10 @@ export class ModelSelectionController {
     this.onChange = onChange;
     this.providerValue = getSetting('provider', DEFAULT_PROVIDER);
     const savedModel = getSetting('modelId', null) as string | null;
-    this.modelValue =
-      savedModel ?? getDefaultModelForProvider(this.providerValue) ?? DEFAULT_MODEL;
+    let effective = savedModel ?? getDefaultModelForProvider(this.providerValue) ?? DEFAULT_MODEL;
+    // Guard for legacy bad defaults persisted in settings (e.g. gpt-5.5 from before phase 1)
+    if (effective && effective.includes('gpt-5')) effective = DEFAULT_MODEL;
+    this.modelValue = effective;
     this.chatHistory.setModel(this.modelValue);
   }
 
