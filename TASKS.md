@@ -8,6 +8,9 @@ See ROADMAP.md, SPEC.md, skills/*.
 - [ ] Themed CLI (prefixes, boxes, colors for diff).
 - Expand tools, memory, evals.
 
+## Done (2026-06 via gstack investigate + phased)
+- [x] Basic TUI functional: rich value-hook setup walkthrough, correct model in banner (guard + good defaults), keys hot-reload for tools, no gpt-5.5 404, chalk direct dep, launch to main interactive. Commits c2730ca,4b4732f,f45dee1. Used investigate skill, gbrain, pipelines, terminal verification. (Phases <=5 files each, forced checks.)
+
 ## Tech
 - Prefer delegate heavy to rektdexter Rust.
 - bun run, uv for py.
