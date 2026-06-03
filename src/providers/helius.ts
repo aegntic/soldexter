@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-const HELIUS_BASE = `https://mainnet.helius-rpc.com/?api-key=${process.env.HELIUS_API_KEY || ""}`;
-
 // Input schemas
 export const GetTokenInfoSchema = z.object({
   mint: z.string().describe("Solana token mint address"),
@@ -88,7 +86,8 @@ export interface WalletLabel {
 
 // Helper for RPC calls
 async function heliusRpc(method: string, params: unknown[]) {
-  const res = await fetch(HELIUS_BASE, {
+  const base = `https://mainnet.helius-rpc.com/?api-key=${process.env.HELIUS_API_KEY || ""}`;
+  const res = await fetch(base, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),

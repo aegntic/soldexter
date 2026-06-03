@@ -1,10 +1,9 @@
 import { z } from "zod";
 
 const BIRDEYE_BASE = "https://public-api.birdeye.so";
-const BIRDEYE_KEY = process.env.BIRDEYE_API_KEY || "";
 
 const headers = () => ({
-  "X-API-KEY": BIRDEYE_KEY,
+  "X-API-KEY": process.env.BIRDEYE_API_KEY || "",
   "x-chain": "solana",
 });
 
