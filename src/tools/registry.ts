@@ -1,5 +1,6 @@
 import { StructuredToolInterface } from '@langchain/core/tools';
 import { exaSearch, perplexitySearch, tavilySearch, langSearch, WEB_SEARCH_DESCRIPTION, xSearchTool, X_SEARCH_DESCRIPTION } from './search/index.js';
+import { featureState } from '../soldextra/registry.js';
 import { createWebSearchTool, type WebSearchProvider } from './search/web-search.js';
 import { getSetting } from '../utils/config.js';
 import type { SearchProviderId } from '../utils/env.js';
@@ -14,7 +15,7 @@ import { cronTool, CRON_TOOL_DESCRIPTION } from './cron/cron-tool.js';
 import { memoryGetTool, MEMORY_GET_DESCRIPTION, memorySearchTool, MEMORY_SEARCH_DESCRIPTION, memoryUpdateTool, MEMORY_UPDATE_DESCRIPTION } from './memory/index.js';
 import { discoverSkills } from '../skills/index.js';
 import { createSpawnSubagent, SPAWN_SUBAGENT_DESCRIPTION } from './subagent/spawn-subagent.js';
-import { getTokenInfoTool, getDexDataTool, getWalletActivityTool, decodeTransactionTool, getTrendingTokensTool, getTokenHoldersTool, getTokenSecurityTool, getGMGNTrendingTool, getGMGNTrenchesTool, getSmartMoneyTool, getKolTool, getPortfolioTool, getWalletActivityGMGNTool } from './solana/index.js';
+import { getTokenInfoTool, getDexDataTool, getWalletActivityTool, decodeTransactionTool, getTrendingTokensTool, getTokenHoldersTool, getTokenSecurityTool, getGMGNTrendingTool, getGMGNTrenchesTool, getSmartMoneyTool, getKolTool, getPortfolioTool, getWalletActivityGMGNTool, scanWalletTool, auditTokenRiskTool, logPaperSignalTool, scorePaperSignalsTool } from './solana/index.js';
 
 /**
  * A registered tool with its rich description for system prompt injection.
@@ -207,9 +208,37 @@ export function getToolRegistry(model: string): RegisteredTool[] {
     {
       name: 'get_gmgn_wallet_activity',
       tool: getWalletActivityGMGNTool,
-      description: 'Wallet trade history from GMGN. Individual buy/sell trades with token, amounts, prices, timestamps. Complements Helius activity with GMGN smart labeling.',
-      compactDescription: 'GMGN wallet trade history with smart labeling and degen classification.',
+      description: 'Wallet trade history from the GMGN OpenAPI. Individual buy/sell trades. Read-only.',
+      compactDescription: 'GMGN OpenAPI wallet trade history. Read-only.',
       concurrencySafe: true,
+    },
+    {
+      name: 'scan_wallet',
+      tool: scanWalletTool,
+      description: 'Five-layer wallet scan. Reports WALLET, TIER, SCORE, PRIMARY EDGE, WIN_RATE, AVG_ENTRY_MCAP, BEST_CALL, CONSENSUS_DEVIATION, RED_FLAGS, CONFIDENCE, NOTES. Unmeasured fields are unverifiable.',
+      compactDescription: '14-day five-layer wallet scan with owner weights, tiers, and red-flag disqualifiers.',
+      concurrencySafe: true,
+    },
+    {
+      name: 'audit_token_risk',
+      tool: auditTokenRiskTool,
+      description: 'Token risk audit: mint/freeze authority, LP, holder and creator concentration, bundler funding graph, loud drainer, honeypot, and fake-airdrop flags.',
+      compactDescription: 'Loud risk audit for honeypots, drainers, and fake-airdrop bait.',
+      concurrencySafe: true,
+    },
+    {
+      name: 'log_paper_signal',
+      tool: logPaperSignalTool,
+      description: 'Append a paper-trade signal with a measured on-chain price. Does not send a transaction.',
+      compactDescription: 'Log a paper signal (time, token, price, source) to the append-only ledger.',
+      concurrencySafe: false,
+    },
+    {
+      name: 'score_paper_signals',
+      tool: scorePaperSignalsTool,
+      description: 'Score a paper signal at 1h, 24h, and 72h including fees and slippage. Append-only. Pending when the horizon or the exit price is missing.',
+      compactDescription: 'Score paper signals at 1h, 24h, and 72h into the append-only ledger.',
+      concurrencySafe: false,
     },
   ];
 
@@ -247,7 +276,7 @@ export function getToolRegistry(model: string): RegisteredTool[] {
     });
   }
 
-  if (process.env.X_BEARER_TOKEN) {
+  if (featureState('x_api').active) {
     tools.push({
       name: 'x_search',
       tool: xSearchTool,

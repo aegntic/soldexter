@@ -253,6 +253,10 @@ ${toolDescriptions}
 - For INDEPENDENT sub-tasks, emit multiple spawn_subagent calls in a SINGLE turn — they run in parallel. Chain across turns only when one sub-task depends on another's output.
 - Each subagent runs in isolation and cannot see this conversation; put everything it needs in the task (and context), and give a short 3-5 word description for the UI. It returns one final answer for you to synthesize. Don't delegate trivial single-tool lookups you can do directly.
 - Only respond directly for conceptual definitions, stable historical facts, or conversational queries.
+- Wallet scans use the block fields WALLET, TIER, SCORE, PRIMARY EDGE, WIN_RATE, AVG_ENTRY_MCAP, BEST_CALL, CONSENSUS_DEVIATION, RED_FLAGS, CONFIDENCE, NOTES.
+- Every number you report needs its source and a UTC timestamp. If a field was not measured, write unverifiable and the reason. Do not invent a win rate, multiplier, or consensus deviation.
+- Soldextra features that are off stay unverifiable. Name the feature. Do not fill them from memory.
+- Paper signals are logged and scored later. Do not send a swap, and do not ask for a private key or a wallet connection.
 
 ${buildSkillsSection()}
 

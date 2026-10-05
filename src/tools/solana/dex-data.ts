@@ -1,22 +1,35 @@
-import { DynamicStructuredTool } from "@langchain/core/tools";
-import { z } from "zod";
-import { getDexData as fetchDexData } from "../../providers/birdeye";
+import { DynamicStructuredTool } from '@langchain/core/tools';
+import { z } from 'zod';
+import { getDexData as fetchBirdeye } from '../../providers/birdeye';
+import { getDexScreenerMarket, getJupiterPrice } from '../../providers/free-market';
+import { featureState } from '../../soldextra/registry';
+import { isMeasured } from '../../intel/sourced';
 
 export const getDexDataTool = new DynamicStructuredTool({
-  name: "get_dex_data",
+  name: 'get_dex_data',
   description:
-    "Get DEX trading data for a Solana token: price, volume, liquidity, price changes, " +
-    "transaction counts, pool info. Source: Birdeye + DexScreener. " +
-    "Use for market analysis, liquidity checks, momentum assessment.",
+    'DEX price, liquidity, and market cap. Uses DexScreener and Jupiter price with no key. ' +
+    'Birdeye is included only when that feature is active. Missing fields stay unverifiable.',
   schema: z.object({
-    mint: z.string().describe("Token mint address"),
+    mint: z.string().describe('Token mint address'),
   }),
   func: async ({ mint }) => {
-    try {
-      const data = await fetchDexData(mint);
-      return JSON.stringify(data, null, 2);
-    } catch (e: any) {
-      return `Error fetching DEX data: ${e.message}`;
+    const dex = await getDexScreenerMarket(mint);
+    const jupiter = await getJupiterPrice(mint);
+    const birdeyeState = featureState('birdeye');
+    let birdeye: unknown = birdeyeState.active ? null : `unverifiable (${birdeyeState.unavailableReason})`;
+    if (birdeyeState.active) {
+      try {
+        birdeye = await fetchBirdeye(mint);
+      } catch (error) {
+        birdeye = `unverifiable (${error instanceof Error ? error.message : String(error)})`;
+      }
     }
+    return JSON.stringify({
+      mint,
+      price_usd: isMeasured(jupiter) ? jupiter : dex.price_usd,
+      dexscreener: dex,
+      birdeye,
+    }, null, 2);
   },
 });

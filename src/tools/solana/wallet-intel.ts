@@ -3,9 +3,7 @@ import { z } from "zod";
 import {
   getWalletActivity as fetchActivity,
   decodeTransaction as fetchDecoded,
-  searchWalletLabels,
 } from "../../providers/helius";
-import { getWalletPnl } from "../../providers/birdeye";
 
 export const getWalletActivityTool = new DynamicStructuredTool({
   name: "get_wallet_activity",

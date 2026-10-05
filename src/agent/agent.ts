@@ -18,6 +18,7 @@ import { AgentToolExecutor } from './tool-executor.js';
 import { MemoryManager } from '../memory/index.js';
 import { runMemoryFlush, shouldRunMemoryFlush } from '../memory/flush.js';
 import { resolveProvider } from '../providers.js';
+import { gatherModel, synthesisModel } from '../intel/model-roles.js';
 
 
 const DEFAULT_MODEL = 'gpt-5.5';
@@ -154,7 +155,7 @@ export class Agent {
       // Call LLM with streaming (falls back to blocking on error)
       while (true) {
         try {
-          const result = yield* this.callModelWithStreaming(messages);
+          const result = yield* this.callModelWithStreaming(messages, { model: gatherModel(this.model) });
           response = result.response;
           usage = result.usage;
           overflowRetries = 0;
@@ -200,9 +201,22 @@ export class Agent {
         yield { type: 'thinking', message: trimmedText };
       }
 
-      // No tool calls = final answer
+      // No tool calls = final answer. When a heavier synthesis model is configured,
+      // rewrite the answer with that model and no tools. The gather draft is the fallback.
       if (!hasToolCalls(response)) {
-        yield* this.handleDirectResponse(responseText ?? '', ctx);
+        let answer = responseText ?? '';
+        const synth = synthesisModel(this.model);
+        if (synth !== gatherModel(this.model)) {
+          try {
+            const synthResult = yield* this.callModelWithStreaming(messages, { model: synth, tools: [] });
+            if (synthResult.usage) ctx.tokenCounter.add(synthResult.usage);
+            const synthText = extractTextContent(synthResult.response);
+            if (synthText?.trim()) answer = synthText;
+          } catch {
+            // Keep the gather-model draft.
+          }
+        }
+        yield* this.handleDirectResponse(answer, ctx);
         return;
       }
 
@@ -287,12 +301,13 @@ export class Agent {
    */
   private async *callModelWithStreaming(
     messages: BaseMessage[],
+    options?: { model?: string; tools?: StructuredToolInterface[] },
   ): AsyncGenerator<StreamProgressEvent, { response: AIMessage; usage?: TokenUsage }> {
     try {
-      return yield* this.streamAndAccumulate(messages);
+      return yield* this.streamAndAccumulate(messages, options);
     } catch {
       // Fallback to blocking invoke (handles providers without streaming support)
-      return await this.callModelWithMessages(messages);
+      return await this.callModelWithMessages(messages, options);
     }
   }
 
@@ -305,14 +320,15 @@ export class Agent {
    */
   private async *streamAndAccumulate(
     messages: BaseMessage[],
+    options?: { model?: string; tools?: StructuredToolInterface[] },
   ): AsyncGenerator<StreamProgressEvent, { response: AIMessage; usage?: TokenUsage }> {
     yield { type: 'stream_progress', charDelta: 0, mode: 'requesting' };
 
     let accumulated: AIMessageChunk | null = null;
 
     for await (const chunk of streamLlmWithMessages(messages, {
-      model: this.model,
-      tools: this.tools,
+      model: options?.model ?? this.model,
+      tools: options?.tools ?? this.tools,
       signal: this.signal,
     })) {
       accumulated = accumulated ? accumulated.concat(chunk) : chunk;
@@ -354,10 +370,11 @@ export class Agent {
    */
   private async callModelWithMessages(
     messages: BaseMessage[],
+    options?: { model?: string; tools?: StructuredToolInterface[] },
   ): Promise<{ response: AIMessage; usage?: TokenUsage }> {
     const result = await callLlmWithMessages(messages, {
-      model: this.model,
-      tools: this.tools,
+      model: options?.model ?? this.model,
+      tools: options?.tools ?? this.tools,
       signal: this.signal,
     });
     return { response: result.response as AIMessage, usage: result.usage };
