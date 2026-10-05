@@ -9,6 +9,7 @@ import {
   resolveSubagentTools,
 } from './types.js';
 import { encodeSubagentProgress } from './progress.js';
+import { gatherModel } from '../../intel/model-roles.js';
 
 // Rough categories so the activity line can roll up trailing operations the way
 // a human would summarize them ("Searched 3×, read 2 sources").
@@ -93,7 +94,7 @@ export function createSpawnSubagent(model: string): DynamicStructuredTool {
       const { Agent } = await import('../../agent/agent.js');
 
       const subagent = await Agent.create({
-        model,
+        model: gatherModel(model),
         maxIterations: typeCfg.maxIterations,
         signal,
         memoryEnabled: false,

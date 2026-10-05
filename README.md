@@ -30,7 +30,8 @@ It decomposes complex questions into multi-step research plans, executes 6+ tool
 
 ### Key Features
 
-- **6 Solana-native tools** — Token analysis, DEX data, wallet forensics, TX decode, trending tokens, holder analysis
+- **Wallet intelligence** — Five-layer wallet scan, token risk audit, and an append-only paper-trade ledger
+- **6 Solana-native tools** — Token analysis, DEX data, wallet forensics, TX decode, trending tokens, holder analysis, plus GMGN OpenAPI reads
 - **Parallel execution** — Tools run concurrently with automatic cross-referencing
 - **Subagent spawning** — Delegate sub-tasks to isolated parallel agents
 - **Persistent memory** — Knowledge survives across sessions
@@ -47,10 +48,17 @@ cd soldexter
 # Install
 bun install
 
-# Set up API keys (at minimum Helius + Birdeye)
-export HELIUS_API_KEY=your_helius_key
-export BIRDEYE_API_KEY=your_birdeye_key
-export OPENAI_API_KEY=your_openai_key  # or use ollama for local
+# Free GMGN OpenAPI key from https://gmgn.ai/ai
+# This is a query key, not a wallet key. The app boots with only this set.
+export GMGN_API_KEY=your_gmgn_key
+
+# Optional. A free Helius key speeds RPC. Public RPC is used when it is absent.
+# export HELIUS_API_KEY=your_helius_key
+
+# One LLM, or a local model for the gather step:
+export OPENAI_API_KEY=your_openai_key
+# export SOLDEXTER_COST_CONTROL=local
+# export OLLAMA_MODEL=llama3.2
 
 # Run
 bun run dev
@@ -60,12 +68,20 @@ bun run dev
 
 | Tool | Description | Source |
 |------|-------------|--------|
-| `get_token_info` | Token metadata, supply, freeze authority, age, creator, pump.fun detection | Helius DAS |
-| `get_dex_data` | Live price, volume, liquidity, price changes, DEX pair data | Birdeye |
-| `get_wallet_activity` | Wallet transaction history — parsed swaps, transfers, amounts, programs | Helius RPC |
-| `decode_transaction` | Full forensic breakdown: programs, inner instructions, token transfers, fees | Helius |
-| `get_trending_tokens` | Trending tokens by volume/momentum with liquidity filtering | Birdeye |
-| `get_token_holders` | Top holders with supply concentration and wallet labels | Helius |
+| `get_token_info` | Supply, mint and freeze authority, Token-2022 extension names | Helius if set, else public RPC |
+| `get_dex_data` | Price, liquidity, market cap. Missing fields stay unverifiable | DexScreener, Jupiter price, Birdeye if set |
+| `get_wallet_activity` | Wallet transaction history — parsed swaps, transfers, amounts, programs | Helius RPC when set |
+| `decode_transaction` | Full forensic breakdown: programs, inner instructions, token transfers, fees | Helius when set |
+| `get_trending_tokens` | Trending tokens. GMGN first, Birdeye when that feature is active | GMGN or Birdeye |
+| `get_token_holders` | Top holders when Helius or GMGN can supply them. Otherwise unverifiable | Helius or GMGN |
+| `scan_wallet` | 14-day five-layer wallet scan in the WALLET / TIER / SCORE block | Public RPC + GMGN |
+| `audit_token_risk` | Mint, freeze, LP, bundler graph, loud honeypot / drainer / fake-airdrop flags | Public RPC, RugCheck, GMGN |
+| `log_paper_signal` | Append a flagged signal with a measured price | Jupiter price or DexScreener |
+| `score_paper_signals` | Score a signal at 1h, 24h, and 72h after fees and slippage | Same ledger |
+| `get_token_security` | GMGN OpenAPI token security. Missing fields stay null | GMGN OpenAPI |
+| `get_gmgn_trending` | GMGN OpenAPI market rank | GMGN OpenAPI |
+| `get_smart_money` / `get_kol_trades` | GMGN kol and smart-money trades | GMGN OpenAPI |
+| `get_gmgn_portfolio` | GMGN wallet stats. Per-token holdings are unverifiable without a signing key, which is not configured | GMGN OpenAPI |
 | `web_search` | Web search via Exa, Tavily, Perplexity, or LangSearch | Multi |
 | `browser` | JavaScript-rendered page navigation and scraping | Playwright |
 | `memory` | Persistent knowledge base across sessions | Local |
@@ -91,16 +107,16 @@ Verdict: Stablecoin, deep liquidity, safe to transact.
 ### Wallet Intelligence
 
 ```
-> What is 7x4kX... doing right now?
+> Scan C1ha9J8b8KSDGvEGDC2hmYy6yN4cvcBz9AVDdpQmD3at
 
-Soldexter: Looking up wallet labels and recent activity...
-[parallel: get_wallet_activity, search_wallet_labels, get_wallet_pnl]
-
-## Wallet 7x4kX... Profile
-Label: Known whale | 30d P&L: +$2.3M (+187%) | Win rate: 71%
-Last action: Bought 85 SOL of POPE (3 min ago)
-Pattern: Loading new meme launches — typical early-entry behavior.
+WALLET: C1ha9J8b8KSDGvEGDC2hmYy6yN4cvcBz9AVDdpQmD3at
+TIER: UNSCORED
+SCORE: unverifiable (window only partly parsed)
+WIN_RATE: unverifiable (window only partly parsed, so a win rate would be a lower bound)
+CONSENSUS_DEVIATION: unverifiable (no DexScreener listing or boost timestamps)
 ```
+
+A number is printed only when the scan measured it, and then it includes its source and UTC time.
 
 ### Market Scanner
 
@@ -132,11 +148,20 @@ Verdict: Standard Jupiter swap, no suspicious patterns.
 
 ## Data Sources
 
-| Provider | Capabilities |
-|----------|-------------|
-| [Helius](https://helius.xyz) | Solana RPC, DAS API, enhanced transactions, wallet labels, webhooks |
-| [Birdeye](https://birdeye.so) | Token prices, OHLCV candles, trending tokens, wallet P&L |
-| [Jupiter v6](https://station.jup.ag) | Swap quotes, route planning, paper-trade / live execution |
+What is core versus Soldextra is a default, not a final split. The only switch is `tier` on a row in `src/soldextra/registry.ts`. A feature that needs a paid key starts as soldextra. Everything else starts as core. Soldextra calls stay off until `SOLDEXTRA_ENABLED=true`.
+
+| Source | Default | Needs |
+|--------|---------|--------|
+| GMGN OpenAPI (token, market, wallet stats, kol, smartmoney) | core | Free `GMGN_API_KEY`. Read-only |
+| Solana public RPC | core | No key |
+| DexScreener, GeckoTerminal, RugCheck, Jupiter price | core | No key |
+| Helius free RPC / DAS | core | Optional `HELIUS_API_KEY` |
+| Birdeye | core | Optional `BIRDEYE_API_KEY` (a free key exists). Flip the row to move it |
+| Solscan Pro | soldextra | `SOLSCAN_API_KEY` |
+| X API | soldextra | `X_BEARER_TOKEN` |
+| Helius paid-plan calls | soldextra | `HELIUS_API_KEY` plus the flag |
+
+GMGN swap, multi-swap, order, and cooking are not wired. The client rejects those paths. `GMGN_PRIVATE_KEY` is not read.
 
 ## Architecture
 
@@ -149,7 +174,7 @@ Verdict: Standard Jupiter swap, no suspicious patterns.
 ├──────────┴──────────┴───────────┴───────────┤
 │           Subagent Spawning Layer            │
 ├──────────────────────────────────────────────┤
-│  Helius RPC │ Birdeye API │ Jupiter v6 API   │
+│  GMGN OpenAPI │ public RPC │ DexScreener │ Jupiter price │
 └──────────────────────────────────────────────┘
 ```
 
@@ -171,20 +196,31 @@ export MAINNET_ENABLED=true       # opt-in 2
 export SOLANA_KEYPAIR=path/to/keypair.json
 ```
 
-Both flags must be set. Paper mode is always the default.
+Both flags must be set. Paper mode is always the default. Wallet scans and the paper ledger do not use this gate, and they do not add a new way to send a transaction.
+
+Paper signals append to `.dexter/paper-ledger.jsonl`. A horizon is scored only after it is due and an exit price was measured. Fees default to 30 bps and slippage to 100 bps, and both numbers are stored on the score line.
 
 ## Environment Variables
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `HELIUS_API_KEY` | Yes | Helius RPC and DAS API access |
-| `BIRDEYE_API_KEY` | Yes | Birdeye price and market data |
+| `GMGN_API_KEY` | For GMGN queries | Free OpenAPI key from gmgn.ai/ai. Not a wallet key |
+| `HELIUS_API_KEY` | No | Optional free RPC. Absent key uses the public RPC |
+| `BIRDEYE_API_KEY` | No | Optional. Off until the key is set |
+| `SOLDEXTRA_ENABLED` | No | Turns on features whose registry tier is soldextra |
+| `SOLSCAN_API_KEY` | No | Solscan Pro. Soldextra |
+| `X_BEARER_TOKEN` | No | X API. Soldextra |
 | `OPENAI_API_KEY` | One LLM | OpenAI GPT models |
 | `ANTHROPIC_API_KEY` | or | Anthropic Claude models |
 | `GOOGLE_API_KEY` | or | Google Gemini models |
-| `EXECUTION_ENABLED` | No | Enable swap execution (opt-in 1) |
-| `MAINNET_ENABLED` | No | Enable mainnet transactions (opt-in 2) |
-| `SOLANA_KEYPAIR` | No | Path to Solana keypair for execution |
+| `SOLDEXTER_COST_CONTROL` | No | `local` (Ollama) or `fast` for fetch and parse |
+| `SOLDEXTER_MODEL_FETCH` | No | Override the fetch model |
+| `SOLDEXTER_MODEL_PARSE` | No | Override the parse model |
+| `SOLDEXTER_MODEL_SCORE` | No | Override the score model |
+| `SOLDEXTER_MODEL_SYNTHESIZE` | No | Override the synthesis model |
+| `EXECUTION_ENABLED` | No | Existing live-trade opt-in 1. Unchanged |
+| `MAINNET_ENABLED` | No | Existing live-trade opt-in 2. Unchanged |
+| `SOLANA_KEYPAIR` | No | Existing live-trade key path. The new tools never read it |
 
 ## Tech Stack
 
@@ -216,5 +252,5 @@ Contributions are welcome. Open an issue or PR.
 ---
 
 <p align="center">
-  <sub>Built with ☉ by <a href="https://x.com/aegntix">@aegntix</a> · Powered by <a href="https://helius.xyz">Helius</a>, <a href="https://birdeye.so">Birdeye</a>, <a href="https://station.jup.ag">Jupiter</a></sub>
+  <sub>Built with ☉ by <a href="https://x.com/aegntix">@aegntix</a> · GMGN OpenAPI, public Solana RPC, DexScreener, Jupiter price</sub>
 </p>

@@ -32,8 +32,8 @@ export interface TokenInfo {
   symbol: string;
   decimals: number;
   supply: string;
-  holder_count: number;
-  top_10_holders_pct: number;
+  holder_count: number | null;
+  top_10_holders_pct: number | null;
   creation_date: string | null;
   creator_address: string | null;
   metadata_uri: string | null;
@@ -128,8 +128,8 @@ export async function getTokenInfo(mint: string): Promise<TokenInfo> {
     symbol: metadata.symbol || "UNKNOWN",
     decimals: supplyInfo?.value?.decimals || 0,
     supply: supplyInfo?.value?.amount || "0",
-    holder_count: 0, // Requires separate pagination call
-    top_10_holders_pct: 0, // Requires holder analysis
+    holder_count: null,
+    top_10_holders_pct: null,
     creation_date: data.creation_time ? new Date(data.creation_time * 1000).toISOString() : null,
     creator_address: data.creators?.[0]?.address || null,
     metadata_uri: data.content?.json_uri || null,
@@ -153,7 +153,7 @@ export async function getWalletActivity(address: string, limit = 20, type = "all
   const batch = sigs.slice(0, Math.min(limit, 10)); // Helius limits batch size
   const txs = await heliusRpc("getTransaction", [
     batch.map((s: any) => s.signature),
-    { encoding: "jsonParsed", maxSupportedTransactionVersion: 0 },
+    { encoding: "jsonParsed", maxSupportedTransactionVersion: 1 },
   ]);
 
   return (txs || [])
@@ -168,7 +168,7 @@ export async function getWalletActivity(address: string, limit = 20, type = "all
 export async function decodeTransaction(signature: string): Promise<DecodedTransaction> {
   const tx = await heliusRpc("getTransaction", [
     [signature],
-    { encoding: "jsonParsed", maxSupportedTransactionVersion: 0 },
+    { encoding: "jsonParsed", maxSupportedTransactionVersion: 1 },
   ]);
 
   if (!tx?.[0]) throw new Error(`Transaction not found: ${signature}`);

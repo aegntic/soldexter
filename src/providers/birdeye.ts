@@ -55,9 +55,9 @@ export interface TrendingToken {
 }
 
 export interface WalletPnl {
-  total_pnl_usd: number;
-  win_rate: number;
-  total_trades: number;
+  total_pnl_usd: number | null;
+  win_rate: number | null;
+  total_trades: number | null;
   avg_trade_size: number;
   best_trade: { mint: string; symbol: string; pnl: number } | null;
   worst_trade: { mint: string; symbol: string; pnl: number } | null;
@@ -141,23 +141,15 @@ export async function getWalletPnl(address: string, timeframe = "30d"): Promise<
     const data = await birdeyeFetch(`/v1/wallet/token_list?wallet=${address}`);
     // Basic P&L estimation from token list
     return {
-      total_pnl_usd: data?.totalPnl || 0,
-      win_rate: data?.winRate || 0,
-      total_trades: data?.totalTrades || 0,
-      avg_trade_size: data?.avgTradeSize || 0,
+      total_pnl_usd: typeof data?.totalPnl === 'number' ? data.totalPnl : null,
+      win_rate: typeof data?.winRate === 'number' ? data.winRate : null,
+      total_trades: typeof data?.totalTrades === 'number' ? data.totalTrades : null,
+      avg_trade_size: typeof data?.avgTradeSize === 'number' ? data.avgTradeSize : 0,
       best_trade: null,
       worst_trade: null,
       most_traded_tokens: [],
     };
-  } catch {
-    return {
-      total_pnl_usd: 0,
-      win_rate: 0,
-      total_trades: 0,
-      avg_trade_size: 0,
-      best_trade: null,
-      worst_trade: null,
-      most_traded_tokens: [],
-    };
+  } catch (error) {
+    throw new Error(`Birdeye wallet PnL unverifiable: ${error instanceof Error ? error.message : String(error)}`);
   }
 }

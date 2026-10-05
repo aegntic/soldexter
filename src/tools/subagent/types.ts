@@ -42,6 +42,41 @@ const READ_ONLY_TOOLS = [
   'read_file',
   'memory_search',
   'memory_get',
+  'get_token_info',
+  'get_dex_data',
+  'get_wallet_activity',
+  'decode_transaction',
+  'get_trending_tokens',
+  'get_token_holders',
+  'get_token_security',
+  'get_gmgn_trending',
+  'get_smart_money',
+  'get_kol_trades',
+  'get_gmgn_portfolio',
+  'get_gmgn_wallet_activity',
+  'scan_wallet',
+  'audit_token_risk',
+];
+
+const WALLET_INTEL_TOOLS = [
+  'scan_wallet',
+  'audit_token_risk',
+  'log_paper_signal',
+  'score_paper_signals',
+  'get_token_info',
+  'get_dex_data',
+  'get_wallet_activity',
+  'decode_transaction',
+  'get_trending_tokens',
+  'get_token_holders',
+  'get_token_security',
+  'get_gmgn_trending',
+  'get_gmgn_trenches',
+  'get_smart_money',
+  'get_kol_trades',
+  'get_gmgn_portfolio',
+  'get_gmgn_wallet_activity',
+  'read_file',
 ];
 
 const WORKER_PREAMBLE =
@@ -70,6 +105,15 @@ export const SUBAGENT_TYPES: Record<string, SubagentTypeConfig> = {
     systemPrompt: `${WORKER_PREAMBLE}\n\nYou are a financial analysis worker. Pull the relevant financials, metrics, and market data, then deliver a focused quantitative analysis with the numbers that support it.`,
     tools: ['get_financials', 'get_market_data', 'stock_screener', 'read_filings'],
     maxIterations: 8,
+  },
+  'wallet-intel': {
+    whenToUse: 'Score one wallet or audit one token. Returns the scan or risk block with sources.',
+    systemPrompt: `${WORKER_PREAMBLE}\n\nYou are a wallet-intelligence worker. Use scan_wallet and audit_token_risk. ` +
+      'Repeat measured numbers with their source and UTC time. If a field is unverifiable, say so and give the reason. ' +
+      'Do not invent a win rate, multiplier, tier, or consensus deviation. Do not suggest a live trade. ' +
+      'Paper signals may be logged; they are not transactions.',
+    tools: WALLET_INTEL_TOOLS,
+    maxIterations: 6,
   },
 };
 
